@@ -18,7 +18,7 @@
  *   (via index.tsx) to update the map display.
  */
 
-// Google Maps JS API Loader: Used to load the Google Maps JavaScript API.
+// Google Maps API Loader: Used to load the Google Maps JavaScript API.
 import {Loader} from '@googlemaps/js-api-loader';
 import hljs from 'highlight.js';
 import {html, LitElement, PropertyValueMap} from 'lit';
@@ -79,6 +79,9 @@ export enum ChatRole {
   SYSTEM,
 }
 
+// Google Maps API Key: Replace with your actual Google Maps API key.
+const USER_PROVIDED_GOOGLE_MAPS_API_KEY: string = ''; // <-- REPLACE THIS WITH YOUR ACTUAL API KEY
+
 const EXAMPLE_PROMPTS = [
   "Take me to the North Pole.",
   "Let's go to Karachi, Pakistan.",
@@ -99,7 +102,6 @@ export class MapApp extends LitElement {
   // Google Maps: Reference to the <gmp-map-3d> DOM element where the map is rendered.
   @query('#mapContainer') mapContainerElement?: HTMLElement; // Will be <gmp-map-3d>
   @query('#messageInput') messageInputElement?: HTMLInputElement;
-  @query('#apiKeyInput') apiKeyInputElement?: HTMLInputElement;
 
   @state() chatState = ChatState.IDLE;
   @state() isRunning = true;
@@ -110,8 +112,6 @@ export class MapApp extends LitElement {
   @state() mapError = '';
   @state() isListening = false;
   @state() showChatPanel = true; // Toggle for sidebar visibility
-  
-  @state() googleMapsApiKey = '';
   @state() showApiKeyModal = false;
 
   // Google Maps: Instance of the Google Maps 3D map.
@@ -155,35 +155,12 @@ export class MapApp extends LitElement {
   protected firstUpdated(
     _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>,
   ): void {
-    this.checkAndLoadMap();
+    // Google Maps: Load the map when the component is first updated.
+    this.loadMap();
     
     // Stop orbit on user interaction to prevent fighting for control
-    this.addEventListener('pointerdown', () => this.stopOrbit());
-    this.addEventListener('wheel', () => this.stopOrbit());
-  }
-
-  /**
-   * Checks for an API key in storage or code, and triggers map loading or modal.
-   */
-  private checkAndLoadMap() {
-    const storedKey = localStorage.getItem('google_maps_api_key');
-    
-    if (storedKey) {
-      this.googleMapsApiKey = storedKey;
-      this.loadMap();
-    } else {
-      this.showApiKeyModal = true;
-    }
-  }
-
-  private handleApiKeySubmit() {
-    if (this.apiKeyInputElement && this.apiKeyInputElement.value.trim()) {
-      const key = this.apiKeyInputElement.value.trim();
-      localStorage.setItem('google_maps_api_key', key);
-      this.googleMapsApiKey = key;
-      this.showApiKeyModal = false;
-      this.loadMap();
-    }
+    (this as unknown as HTMLElement).addEventListener('pointerdown', () => this.stopOrbit());
+    (this as unknown as HTMLElement).addEventListener('wheel', () => this.stopOrbit());
   }
 
   /**
@@ -242,7 +219,7 @@ export class MapApp extends LitElement {
         if (interimTranscript) {
              this.inputMessage = interimTranscript;
         }
-        this.requestUpdate();
+        (this as any).requestUpdate();
       };
 
       this.recognition.onerror = (event: any) => {
@@ -384,14 +361,33 @@ export class MapApp extends LitElement {
     }
   }
 
+  private saveApiKey(key: string) {
+      if (key && key.trim()) {
+          localStorage.setItem('GOOGLE_MAPS_API_KEY', key.trim());
+          window.location.reload();
+      }
+  }
+
   /**
    * Google Maps: Loads the Google Maps JavaScript API using the JS API Loader.
    */
   async loadMap() {
-    if (!this.googleMapsApiKey) return;
+    let apiKey = USER_PROVIDED_GOOGLE_MAPS_API_KEY;
+
+    // Try to load from local storage if hardcoded key is missing
+    if (apiKey === '' || apiKey === 'YOUR_ACTUAL_GOOGLE_MAPS_API_KEY_REPLACE_ME') {
+        apiKey = localStorage.getItem('GOOGLE_MAPS_API_KEY') || '';
+    }
+
+    if (!apiKey) {
+      this.mapError = ''; // Clear previous error to show modal cleanly
+      this.showApiKeyModal = true;
+      (this as any).requestUpdate();
+      return;
+    }
 
     const loader = new Loader({
-      apiKey: this.googleMapsApiKey,
+      apiKey: apiKey,
       version: 'alpha', // Use alpha for 3D maps stability
     });
 
@@ -421,10 +417,12 @@ export class MapApp extends LitElement {
     } catch (error) {
       console.error('Error loading Google Maps API:', error);
       this.mapError =
-        'Could not load Google Maps. Check console for details.';
+        'Could not load Google Maps. Check console for details or verify your API Key.';
+      // If validation fails, likely bad key. Allow user to reset.
+      localStorage.removeItem('GOOGLE_MAPS_API_KEY');
       this.mapInitialized = false;
     }
-    this.requestUpdate();
+    (this as any).requestUpdate();
   }
 
   /**
@@ -747,18 +745,19 @@ export class MapApp extends LitElement {
 
     return html`<div class="gdm-map-app">
       ${this.showApiKeyModal ? html`
-        <div class="api-key-modal">
-          <div class="modal-content">
-            <h2>Welcome to Whisper Maps 3D</h2>
-            <p>To explore the globe in 3D, please enter your <strong>Google Maps API Key</strong>.</p>
-            <p>This key is saved locally in your browser and is never sent to any other server.</p>
-            <input type="password" id="apiKeyInput" class="key-input" placeholder="Enter your API Key here" @keydown=${(e: KeyboardEvent) => e.key === 'Enter' && this.handleApiKeySubmit()} />
-            <button class="key-submit-btn" @click=${this.handleApiKeySubmit}>Start Exploring</button>
-            <p style="font-size: 0.8em; margin-top: 10px;">Don't have a key? <a href="https://developers.google.com/maps/documentation/javascript/get-api-key" target="_blank" style="color: inherit;">Get one here</a>.</p>
-          </div>
+        <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+            <div style="background: var(--color-bg-floating); padding: 2rem; border-radius: 16px; width: 90%; max-width: 400px; border: 1px solid var(--color-sidebar-border); box-shadow: 0 4px 24px rgba(0,0,0,0.2);">
+                <h2 style="margin-bottom: 1rem; font-size: 1.5rem;">Setup Required</h2>
+                <p style="margin-bottom: 1.5rem; opacity: 0.8;">Please enter your Google Maps API Key to enable 3D visualization.</p>
+                <input type="password" id="apiKeyInput" placeholder="Paste API Key" style="width: 100%; padding: 12px; margin-bottom: 1.5rem; border-radius: 8px; border: 1px solid var(--color-sidebar-border); background: rgba(128,128,128,0.1); color: var(--color-text); font-size: 1rem; outline: none;">
+                <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <button @click=${() => this.saveApiKey(((this as any).querySelector('#apiKeyInput') as HTMLInputElement).value)} style="padding: 10px 24px; background: var(--color-accent); color: var(--color-accent-text); border: none; border-radius: 24px; font-weight: 600; cursor: pointer;">Start</button>
+                </div>
+                 <p style="margin-top: 1.5rem; font-size: 0.8rem; text-align: center; opacity: 0.6;">Key is stored locally in your browser.</p>
+            </div>
         </div>
       ` : ''}
-      
+
       <div
         class="main-container"
         role="application"

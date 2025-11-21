@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', async (event) => {
   const rootElement = document.querySelector('#root')! as HTMLElement;
 
   const mapApp = new MapApp();
-  rootElement.appendChild(mapApp);
+  rootElement.appendChild(mapApp as unknown as Node);
 
   const [transportA, transportB] = InMemoryTransport.createLinkedPair();
 
