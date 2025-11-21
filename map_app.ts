@@ -748,7 +748,8 @@ export class MapApp extends LitElement {
         <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
             <div style="background: var(--color-bg-floating); padding: 2rem; border-radius: 16px; width: 90%; max-width: 400px; border: 1px solid var(--color-sidebar-border); box-shadow: 0 4px 24px rgba(0,0,0,0.2);">
                 <h2 style="margin-bottom: 1rem; font-size: 1.5rem;">Setup Required</h2>
-                <p style="margin-bottom: 1.5rem; opacity: 0.8;">Please enter your Google Maps API Key to enable 3D visualization.</p>
+                <p style="margin-bottom: 0.5rem; opacity: 0.8;">Please enter your Google Maps API Key to enable 3D visualization.</p>
+                <a href="https://developers.google.com/maps/documentation/javascript/get-api-key" target="_blank" rel="noopener noreferrer" style="color: var(--color-text); display: block; margin-bottom: 1.5rem; font-size: 0.9rem; text-decoration: underline;">Get your API Key here</a>
                 <input type="password" id="apiKeyInput" placeholder="Paste API Key" style="width: 100%; padding: 12px; margin-bottom: 1.5rem; border-radius: 8px; border: 1px solid var(--color-sidebar-border); background: rgba(128,128,128,0.1); color: var(--color-text); font-size: 1rem; outline: none;">
                 <div style="display: flex; justify-content: flex-end; gap: 10px;">
                     <button @click=${() => this.saveApiKey(((this as any).querySelector('#apiKeyInput') as HTMLInputElement).value)} style="padding: 10px 24px; background: var(--color-accent); color: var(--color-accent-text); border: none; border-radius: 24px; font-weight: 600; cursor: pointer;">Start</button>
