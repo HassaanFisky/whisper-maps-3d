@@ -1,0 +1,507 @@
+/**
+ * This CSS file provides all the global styling for the application.
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inconsolata:wght@200..900&display=swap');
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  height: 100%;
+  display: flex;
+  font-family: 'Google Sans Text', 'Google Sans', sans-serif;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  margin: 0;
+  overflow: hidden;
+
+  --color-bg: light-dark(#fff, #000);
+  --color-text: light-dark(#000, #fff);
+
+  --color-inv-bg: light-dark(#000, #fff);
+  --color-inv-text: light-dark(#fff, #000);
+  
+  --color-accent: light-dark(#000, #fff);
+  --color-accent-text: light-dark(#fff, #000);
+  
+  --color-bg-translucent: light-dark(rgba(255, 255, 255, 0.8), rgba(30, 30, 30, 0.8));
+  --color-bg-floating: light-dark(rgba(255, 255, 255, 0.9), rgba(20, 20, 20, 0.9));
+  
+  --color-sidebar-border: light-dark(rgba(0,0,0,0.1), rgba(255,255,255,0.1));
+
+  --color-bg2: light-dark(#f0f0f0, #333);
+  --color-text2: light-dark(#333, #f0f0f0);
+  --color-bg3: light-dark(#dadada, #4b4b4b);
+  --color-text3: light-dark(#333, #f0f0f0);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(128, 128, 128, 0.4);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  --code-bg: #222;
+  --code-text: #ccc;
+  --code-editor-bg: var(--color-bg2);
+  --code-editor-text: var(--color-text2);
+  --color-error-bg: #ff3326;
+  --color-error-text: #000;
+}
+
+.gdm-map-app {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: hidden;
+}
+
+textarea {
+  border: none;
+  overflow: auto;
+  outline: none;
+  box-shadow: none;
+  resize: none;
+}
+
+.hidden {
+  display: none!important;
+}
+
+#root,
+.gdm-map-app {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.main-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+#mapContainer {
+  flex-grow: 1;
+  height: 100%;
+  width: 100%;
+  background-color: #e0e0e0;
+}
+
+.map-error-message {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0,0,0,0.7);
+  color: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  z-index: 1000;
+}
+
+/* Floating Sidebar Implementation */
+.sidebar {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  bottom: 20px;
+  width: 340px;
+  max-width: calc(100% - 40px);
+  z-index: 10;
+  
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  
+  /* Fully transparent container */
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+  pointer-events: none; /* Allow clicking through empty space */
+  
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.sidebar.hidden-sidebar {
+  opacity: 0;
+  transform: translateX(-20px);
+  pointer-events: none;
+}
+
+/* Make interactive children clickable */
+.sidebar > * {
+  pointer-events: auto;
+}
+
+/* Header / Tab Selector */
+.selector {
+  display: flex;
+  flex-direction: row;
+  padding: 0 1em;
+  flex-shrink: 0;
+  
+  background: var(--color-bg-floating);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid var(--color-sidebar-border);
+  border-radius: 16px;
+  margin-bottom: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.selector button {
+  display: flex;
+  gap: 5px;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 12px 16px;
+  transition: 0.3s;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.selector button:hover {
+  opacity: 0.7;
+}
+
+.selected-tab, .selector button.active {
+  border-bottom: 3px solid var(--color-accent, #000) !important;
+}
+
+.tabcontent {
+  display: none;
+  pointer-events: none; /* Allow click-through in empty chat areas */
+}
+
+.showtab {
+  display: flex!important;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+#chat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+  padding: 0 4px; /* Small padding for scrollbar space */
+  scroll-behavior: smooth;
+  padding-bottom: 10px;
+  
+  /* Mask to fade out messages at the top */
+  mask-image: linear-gradient(to bottom, transparent 0%, black 20px, black 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20px, black 100%);
+  
+  pointer-events: auto; /* Allow scrolling/clicking messages */
+}
+
+.footer {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  background: transparent;
+  margin-top: 10px;
+  pointer-events: auto;
+}
+
+/* Message Bubbles */
+.turn {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 18px;
+  max-width: 100%;
+  word-wrap: break-word;
+  
+  /* Floating bubble style */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border: 1px solid var(--color-sidebar-border);
+}
+
+.role-user {
+    background-color: var(--color-accent);
+    color: var(--color-accent-text);
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    
+    details { display: none; }
+}
+
+.role-assistant {
+    background-color: var(--color-bg-floating);
+    color: var(--color-text);
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+}
+
+.role-error {
+  background-color: var(--color-error-bg);
+  color: var(--color-error-text);
+  align-self: flex-start;
+  border-bottom-left-radius: 4px;
+  details { display: none; }
+}
+
+/* Status Area */
+#chatStatus {
+  background: var(--color-bg-floating);
+  backdrop-filter: blur(10px);
+  padding: 0.5em 1em;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  font-size: 0.85em;
+  font-weight: 500;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  border: 1px solid var(--color-sidebar-border);
+  width: fit-content;
+  align-self: center;
+}
+
+#chatStatus svg {
+  margin-right: 8px;
+}
+
+/* Input Area */
+#inputArea {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  gap: 8px;
+  
+  background: var(--color-bg-floating);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-radius: 30px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  border: 1px solid var(--color-sidebar-border);
+}
+
+#messageInput {
+  flex-grow: 1;
+  padding: 12px 16px;
+  border: 1px solid transparent;
+  border-radius: 24px;
+  font-size: 1em;
+  background: rgba(127, 127, 127, 0.1);
+  color: var(--color-text);
+  line-height: 1.4;
+  outline: none;
+}
+
+#messageInput:focus {
+  background: rgba(127, 127, 127, 0.15);
+}
+
+#sendButton {
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+  background-color: var(--color-accent);
+  color: var(--color-accent-text);
+}
+
+#sendButton:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
+}
+
+#sendButton.disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Floating Controls Container */
+.floating-controls {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  z-index: 100;
+}
+
+.control-btn {
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  border: 1px solid var(--color-sidebar-border);
+}
+
+.mic-btn {
+  width: 70px; /* Large and usable */
+  height: 70px;
+  background-color: var(--color-bg-floating);
+  color: var(--color-text);
+}
+
+.mic-btn:hover {
+  background-color: var(--color-text);
+  color: var(--color-bg);
+  transform: scale(1.1);
+}
+
+.mini-btn {
+  width: 40px;
+  height: 40px;
+  background-color: rgba(128,128,128,0.5);
+  color: white;
+}
+
+.mini-btn:hover {
+  background-color: rgba(128,128,128,0.8);
+}
+
+/* Speech Overlay */
+.speech-overlay {
+  position: absolute;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  max-width: 600px;
+  text-align: center;
+  z-index: 50;
+  pointer-events: none;
+}
+
+.speech-bubble {
+  display: inline-block;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 20px 30px;
+  border-radius: 30px;
+  font-size: 1.5em;
+  font-weight: 500;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  animation: fade-up 0.3s ease-out;
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Animations */
+@keyframes rotating {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.rotating {
+  animation: rotating 1s linear infinite;
+}
+
+@keyframes pulse-red {
+  0% { box-shadow: 0 0 0 0 rgba(255, 65, 54, 0.4); }
+  70% { box-shadow: 0 0 0 15px rgba(255, 65, 54, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 65, 54, 0); }
+}
+
+.listening {
+  color: #ff4136 !important;
+  border-color: #ff4136 !important;
+  animation: pulse-red 1.5s infinite;
+}
+
+/* Code Syntax Highlighting */
+pre code.hljs { display: block; overflow-x: auto; padding: 1em }
+code.hljs { padding: 3px 5px }
+.hljs { color: #fff; background: #1c1b1b; border-radius: 8px; }
+/* ... rest of hljs styles ... */
+
+/* Mobile Responsiveness */
+@media only screen and (max-width : 600px) {
+  .sidebar {
+    top: auto;
+    bottom: 100px; /* Above the mic button */
+    left: 0;
+    width: 100%;
+    max-width: none;
+    height: 40vh;
+    padding: 10px;
+  }
+  
+  .selector {
+    display: none; 
+  }
+  
+  .chat-messages {
+    padding-bottom: 0;
+  }
+  
+  .floating-controls {
+    bottom: 20px;
+  }
+  
+  .mic-btn {
+    width: 60px;
+    height: 60px;
+  }
+}

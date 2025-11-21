@@ -1,0 +1,8 @@
+{
+  "name": "Whisper Maps 3D",
+  "description": "Immersive 3D voice-controlled map. \nJust say to go !!\nNavigate the globe, see day/night cycles, and travel to cities with natural language.",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "prompt": ""
+}
