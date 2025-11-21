@@ -79,10 +79,6 @@ export enum ChatRole {
   SYSTEM,
 }
 
-// Google Maps API Key: Replace with your actual Google Maps API key.
-const USER_PROVIDED_GOOGLE_MAPS_API_KEY: string =
-  'AIzaSyAJPTwj4S8isr4b-3NtqVSxk450IAS1lOQ'; // <-- REPLACE THIS WITH YOUR ACTUAL API KEY
-
 const EXAMPLE_PROMPTS = [
   "Take me to the North Pole.",
   "Let's go to Karachi, Pakistan.",
@@ -103,6 +99,7 @@ export class MapApp extends LitElement {
   // Google Maps: Reference to the <gmp-map-3d> DOM element where the map is rendered.
   @query('#mapContainer') mapContainerElement?: HTMLElement; // Will be <gmp-map-3d>
   @query('#messageInput') messageInputElement?: HTMLInputElement;
+  @query('#apiKeyInput') apiKeyInputElement?: HTMLInputElement;
 
   @state() chatState = ChatState.IDLE;
   @state() isRunning = true;
@@ -113,6 +110,9 @@ export class MapApp extends LitElement {
   @state() mapError = '';
   @state() isListening = false;
   @state() showChatPanel = true; // Toggle for sidebar visibility
+  
+  @state() googleMapsApiKey = '';
+  @state() showApiKeyModal = false;
 
   // Google Maps: Instance of the Google Maps 3D map.
   private map?: any;
@@ -155,12 +155,35 @@ export class MapApp extends LitElement {
   protected firstUpdated(
     _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>,
   ): void {
-    // Google Maps: Load the map when the component is first updated.
-    this.loadMap();
+    this.checkAndLoadMap();
     
     // Stop orbit on user interaction to prevent fighting for control
     this.addEventListener('pointerdown', () => this.stopOrbit());
     this.addEventListener('wheel', () => this.stopOrbit());
+  }
+
+  /**
+   * Checks for an API key in storage or code, and triggers map loading or modal.
+   */
+  private checkAndLoadMap() {
+    const storedKey = localStorage.getItem('google_maps_api_key');
+    
+    if (storedKey) {
+      this.googleMapsApiKey = storedKey;
+      this.loadMap();
+    } else {
+      this.showApiKeyModal = true;
+    }
+  }
+
+  private handleApiKeySubmit() {
+    if (this.apiKeyInputElement && this.apiKeyInputElement.value.trim()) {
+      const key = this.apiKeyInputElement.value.trim();
+      localStorage.setItem('google_maps_api_key', key);
+      this.googleMapsApiKey = key;
+      this.showApiKeyModal = false;
+      this.loadMap();
+    }
   }
 
   /**
@@ -365,20 +388,10 @@ export class MapApp extends LitElement {
    * Google Maps: Loads the Google Maps JavaScript API using the JS API Loader.
    */
   async loadMap() {
-    const isApiKeyPlaceholder =
-      USER_PROVIDED_GOOGLE_MAPS_API_KEY ===
-        'YOUR_ACTUAL_GOOGLE_MAPS_API_KEY_REPLACE_ME' ||
-      USER_PROVIDED_GOOGLE_MAPS_API_KEY === '';
-
-    if (isApiKeyPlaceholder) {
-      this.mapError = `Google Maps API Key is not configured correctly.`;
-      console.error(this.mapError);
-      this.requestUpdate();
-      return;
-    }
+    if (!this.googleMapsApiKey) return;
 
     const loader = new Loader({
-      apiKey: USER_PROVIDED_GOOGLE_MAPS_API_KEY,
+      apiKey: this.googleMapsApiKey,
       version: 'alpha', // Use alpha for 3D maps stability
     });
 
@@ -733,6 +746,19 @@ export class MapApp extends LitElement {
     const initialHeading = '0'; 
 
     return html`<div class="gdm-map-app">
+      ${this.showApiKeyModal ? html`
+        <div class="api-key-modal">
+          <div class="modal-content">
+            <h2>Welcome to Whisper Maps 3D</h2>
+            <p>To explore the globe in 3D, please enter your <strong>Google Maps API Key</strong>.</p>
+            <p>This key is saved locally in your browser and is never sent to any other server.</p>
+            <input type="password" id="apiKeyInput" class="key-input" placeholder="Enter your API Key here" @keydown=${(e: KeyboardEvent) => e.key === 'Enter' && this.handleApiKeySubmit()} />
+            <button class="key-submit-btn" @click=${this.handleApiKeySubmit}>Start Exploring</button>
+            <p style="font-size: 0.8em; margin-top: 10px;">Don't have a key? <a href="https://developers.google.com/maps/documentation/javascript/get-api-key" target="_blank" style="color: inherit;">Get one here</a>.</p>
+          </div>
+        </div>
+      ` : ''}
+      
       <div
         class="main-container"
         role="application"
